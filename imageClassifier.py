@@ -4,6 +4,7 @@ import matplotlib.pyplot as pyplt
 from PIL import Image
 from helpers import process_image, load_categories
 from predict import predict, load_checkpoint
+from train import load_datasets, setup_model, train_model, test_network_accuracy, save_checkpoint
 
 
 
@@ -23,7 +24,7 @@ parsed_args = cmd_line_parser.parse_args()
 
 cmd_line_parser.add_argument('-lr','--learning_rate' , default=0.001, help='NN Learning rate')
 cmd_line_parser.add_argument('-e','--epochs' , default=2, help='Training epochs')
-cmd_line_parser.add_argument('-hu','--hidden-units' , help='Hidden units')
+cmd_line_parser.add_argument('-hu','--hidden_units' , help='Hidden units')
 cmd_line_parser.add_argument('-model','--network_model', choices=['vgg16_bn', 'densenet121', 'resnet101'], default='vgg16_bn', help='NN Model')
 cmd_line_parser.add_argument('-cp_patch','--checkpoint', default='./checkpoint.pth', help='Checkpoint path')
 cmd_line_parser.add_argument('-image','--image_path',  help='Image to classify' , required=(parsed_args.train_mode == False))
@@ -44,6 +45,22 @@ if (train_mode == True):
     Training mode
     """
     print ("Classifier Started in training mode")
+    base_data_dir = parsed_args.base_data_dir
+    learning_rate = parsed_args.learning_rate
+    epochs = parsed_args.epochs
+    hidden_units = parsed_args.hidden_units
+    network_model = parsed_args.network_model
+    # Load data 
+    validation_dictionary, training_dictionary, testing_dictionary = load_datasets(base_data_dir)
+    #Setup model
+    model, criterion, optimizer =  setup_model(network_model, hidden_units, learning_rate)
+    #Train model
+    train_model(model, device,epochs, optimizer, criterion, training_dictionary, validation_dictionary)
+    #Test network accuracy
+    test_network_accuracy(model, device, testing_dictionary)
+    #Save checkpoint
+    save_checkpoint(network_model, model, training_dictionary,learning_rate,epochs, optimizer)
+
 
 else:
     """

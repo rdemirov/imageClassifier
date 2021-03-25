@@ -46,8 +46,6 @@ def load_datasets(base_data_dir):
     return validation_dictionary, training_dictionary, testing_dictionary
 
 
-# getattr(models, checkpoint['model_type'])(pretrained=True)
-
 def setup_model(arch, hidden_units, learning_rate):
     """
     Setup model parameters
@@ -127,11 +125,6 @@ def train_model(model, device,epochs, optimizer, criterion, training_dict, valid
                         _, top_class = ps.topk(1, dim=1)
                         equals = top_class == labels_val.view(*top_class.shape)
                         accuracy += torch.mean(equals.type(tensor_type)).item()
-                    
-               # current_epoch = epoch+1
-              #  step_test_loss = test_loss/len(validation_dataloader)
-              #  step_accuracy = accuracy/len(validation_dataloader)
-                    
             current_epoch = epoch+1
             training_loss = running_loss/print_every
             step_test_loss = test_loss/len(validation_dataloader)
@@ -141,8 +134,8 @@ def train_model(model, device,epochs, optimizer, criterion, training_dict, valid
                   f' .... Validation loss: {step_test_loss:.3f} .... Accuracy: {step_accuracy:.3f}')
             running_loss = 0
             model.train()
-        
-print(" Model Training accomplished ")
+            print(" Model Training successfully completed ")
+
 
 
 
@@ -186,10 +179,11 @@ print(" Model Training accomplished ")
             
 
 
-def test_network_accuracy(model, device, testing_dataloader):
+def test_network_accuracy(model, device, testing_dictionary):
     """
     Test Model accuracy
     """
+    testing_dataloader = testing_dictionary.dataloader
     correct = 0
     total = 0
     model.to(device)
@@ -206,19 +200,19 @@ def test_network_accuracy(model, device, testing_dataloader):
     model.train()
 
 
-def save_checkpoint(arch, model, training_idx,learning_rate,epochs, optimizer):
+def save_checkpoint(arch, model, training_dictionary,learning_rate,epochs, optimizer):
     """
     Save model checkpoint
     """
     print("Saving checkpoint")
-    model.class_to_idx = training_idx
+    training_dataset=training_dictionary.dataset
     checkpoint = {
                 'output_size': 102,
                 'model_type': arch,
                 'classifier' : model.classifier,
                 'learning_rate': learning_rate,
                 'epochs': epochs,
-                'class_to_idx': model.class_to_idx,
+                'class_to_idx': training_dataset.class_to_idx,
                 'state_dict': model.state_dict(),
                 'optimizer': optimizer.state_dict(),
                 }
