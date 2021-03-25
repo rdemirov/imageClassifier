@@ -1,15 +1,14 @@
 import torch
-from torch import optim
-from torch import nn
-import numpy as np
-import os
-import json
-import matplotlib.pyplot as pyplt
-from PIL import Image
-from collections import OrderedDict
-from torchvision import datasets,transforms, models
+from torchvision import models
+from helpers import load_categories
+
+
+cat_name = load_categories()
 
 def load_checkpoint(checkpoint_path):
+    """
+    Rebuild model from checkpoint
+    """
     print ("Loading model checkpoint from : {}".format(checkpoint_path))
     checkpoint = torch.load(checkpoint_path)
     model = getattr(models, checkpoint['model_type'])(pretrained=True)
@@ -23,5 +22,24 @@ def load_checkpoint(checkpoint_path):
     
     return model
 
-model = load_checkpoint('checkpoint.pth')  
-print ("Model checkpoint loaded")
+def predict(img_data, model,device, topk):
+    """
+    Classify image
+    """
+    model.to(device)
+        
+    model.eval()
+    
+    inputs = img_data.unsqueeze(0)
+    inputs = inputs.to(device)
+    
+    output = model(inputs)
+    ps = torch.exp(output).data
+    
+    ps_top = ps.topk(topk)
+    idx_class = model.idx_to_class
+    probs = ps_top[0].tolist()[0]
+    classes=[]
+    for i in ps_top[1].tolist()[0]:
+        classes.append(idx_class[i])
+    return probs, classes
