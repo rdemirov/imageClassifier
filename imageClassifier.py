@@ -20,17 +20,18 @@ cmd_line_parser.add_argument('-c','--classify' , action='store_false', help='Use
 cmd_line_parser.add_argument('-data_dir','--base_data_dir' , default='flowers', help='Base data dir')
 cmd_line_parser.add_argument('-g','--force_gpu' , action='store_true', help='Force GPU usage')
 
-parsed_args = cmd_line_parser.parse_args()
 
 cmd_line_parser.add_argument('-lr','--learning_rate' , default=0.001, help='NN Learning rate')
 cmd_line_parser.add_argument('-e','--epochs' , default=2, help='Training epochs')
 cmd_line_parser.add_argument('-hu','--hidden_units' , help='Hidden units')
 cmd_line_parser.add_argument('-model','--network_model', choices=['vgg16_bn', 'densenet121', 'resnet101'], default='vgg16_bn', help='NN Model')
-cmd_line_parser.add_argument('-cp_patch','--checkpoint', default='./checkpoint.pth', help='Checkpoint path')
-cmd_line_parser.add_argument('-image','--image_path',  help='Image to classify' , required=(parsed_args.train_mode == False))
+cmd_line_parser.add_argument('-cp_path','--checkpoint', default='./checkpoint.pth', help='Checkpoint path')
+cmd_line_parser.add_argument('-image','--image_path',  help='Image to classify')
 cmd_line_parser.add_argument('-topk','--topk',  help='Top K classes', default=5 )
 
 parsed_args = cmd_line_parser.parse_args()
+
+print(parsed_args)
 
 force_gpu = parsed_args.force_gpu
 if(force_gpu == True):
@@ -79,6 +80,9 @@ else:
     flower_names = [cat_to_name[category] for category in classes]
     y_axis = flower_names
     x_axis = probabilities
+    formatted_probabilities = ["%.2f" % probability for probability in probabilities]
+    results_dict = dict(dict(zip(y_axis, formatted_probabilities)))
+    print(results_dict)
     fig,axes = pyplt.subplots(2,1)
     axes[0].set_title(flower_names[0])
     img_to_display = Image.open(image_path);

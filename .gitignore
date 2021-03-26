@@ -23,6 +23,7 @@ var/
 wheels/
 *.egg-info/
 .installed.cfg
+*.pth
 *.egg
 
 # PyInstaller

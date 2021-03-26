@@ -82,8 +82,9 @@ def train_model(model, device,epochs, optimizer, criterion, training_dict, valid
     steps = 0
     running_loss = 0
     print_every = 50
-    training_dataloader = training_dict.dataloader
-    validation_dataloader = validation_dict.dataloader
+    test_loss = 0
+    training_dataloader = training_dict["dataloader"]
+    validation_dataloader = validation_dict["dataloader"]
     print('Model is Training...')
     model.to(device);
     if (device=="cuda"):
@@ -125,65 +126,22 @@ def train_model(model, device,epochs, optimizer, criterion, training_dict, valid
                         _, top_class = ps.topk(1, dim=1)
                         equals = top_class == labels_val.view(*top_class.shape)
                         accuracy += torch.mean(equals.type(tensor_type)).item()
-            current_epoch = epoch+1
-            training_loss = running_loss/print_every
-            step_test_loss = test_loss/len(validation_dataloader)
-            step_accuracy = accuracy/len(validation_dataloader)
+                current_epoch = epoch+1
+                training_loss = running_loss/print_every
+                step_test_loss = test_loss/len(validation_dataloader)
+                step_accuracy = accuracy/len(validation_dataloader)
            
-            print(f'Epochs: {current_epoch}/{epochs}  .... Training Loss: {training_loss:.3f}',
-                  f' .... Validation loss: {step_test_loss:.3f} .... Accuracy: {step_accuracy:.3f}')
-            running_loss = 0
-            model.train()
-            print(" Model Training successfully completed ")
-
-
-
-
-
-
-
-
-
-
-
-            
-            # with torch.no_grad():
-            #     for inputs_val, labels_val in validation_dataloader:
-
-            #         if torch.cuda.is_available():
-            #             inputs_val, labels_val = inputs_val.cuda(), labels_val.cuda()
-
-            #         logps = model.forward(inputs_val)
-            #         loss = criterion(logps, labels_val)
-            #         test_loss += loss.item()
-
-            #         # Calculate accuracy
-            #         ps = torch.exp(logps)
-            #         top_p, top_class = ps.topk(1, dim=1)
-            #         equals = top_class == labels_val.view(*top_class.shape)
-            #         accuracy += torch.mean(equals.type(tensor_type)).item()
-                    
-            #         current_epoch = epoch+1
-            #         step_test_loss = test_loss/len(validation_dataloader)
-            #         step_accuracy = accuracy/len(validation_dataloader)
-                    
-            # current_epoch = epoch+1
-            # training_loss = running_loss/print_every
-            # step_test_loss = test_loss/len(validation_dataloader)
-            # step_accuracy = accuracy/len(validation_dataloader)
-           
-            # print(f'Epochs: {current_epoch}/{epochs}  .... Training Loss: {training_loss:.3f}',
-            #       f' .... Validation loss: {step_test_loss:.3f} .... Accuracy loss: {step_accuracy:.3f}')
-            # running_loss = 0
-            # model.train()
-            
-
+                print(f'Epochs: {current_epoch}/{epochs}  .... Training Loss: {training_loss:.3f}',
+                    f' .... Validation loss: {step_test_loss:.3f} .... Accuracy: {step_accuracy:.3f}')
+                running_loss = 0
+                model.train()
+print(" Model Training successfully completed ")
 
 def test_network_accuracy(model, device, testing_dictionary):
     """
     Test Model accuracy
     """
-    testing_dataloader = testing_dictionary.dataloader
+    testing_dataloader = testing_dictionary["dataloader"]
     correct = 0
     total = 0
     model.to(device)
@@ -205,7 +163,7 @@ def save_checkpoint(arch, model, training_dictionary,learning_rate,epochs, optim
     Save model checkpoint
     """
     print("Saving checkpoint")
-    training_dataset=training_dictionary.dataset
+    training_dataset=training_dictionary["dataset"]
     checkpoint = {
                 'output_size': 102,
                 'model_type': arch,
